@@ -1,6 +1,10 @@
 use std::fs;
 
 fn is_safe(report: &[i32]) -> bool {
+    if report.len() < 2 {
+        return true;
+    }
+
     let first_diff = report[1] - report[0];
     if first_diff == 0 {
         return false;
@@ -15,7 +19,7 @@ fn is_safe(report: &[i32]) -> bool {
             }
         }
     } else {
-        // Expect strictly decreasing values with difference in -2..=-1
+        // Expect strictly decreasing values with difference in -3..=-1
         for pair in report.windows(2) {
             let diff = pair[1] - pair[0];
             if !(-3..=-1).contains(&diff) {
@@ -24,6 +28,24 @@ fn is_safe(report: &[i32]) -> bool {
         }
     }
     true
+}
+
+fn is_safe_with_dampener(report: &[i32]) -> bool {
+    if is_safe(report) {
+        return true;
+    }
+    // Try removing one level at a time.
+    for i in 0..report.len() {
+        let new_report: Vec<i32> = report[..i]
+            .iter()
+            .chain(report[i + 1..].iter())
+            .copied()
+            .collect();
+        if new_report.len() >= 2 && is_safe(&new_report) {
+            return true;
+        }
+    }
+    false
 }
 
 fn main() {
@@ -37,8 +59,15 @@ fn main() {
             .collect();
         v.push(reports);
     }
-    println!("{}", v.iter().filter(|r| is_safe(r)).count());
+    println!(
+        "Number of safe reports: {}",
+        v.iter().filter(|r| is_safe(r)).count()
+    );
 
-    let safe_reports_count = v.iter().filter(|report| is_safe(report)).count();
-    println!("Number of safe reports: {}", safe_reports_count);
+    println!(
+        "Number of safe reports (w/Dampener): {}",
+        v.iter()
+            .filter(|report| is_safe_with_dampener(report))
+            .count()
+    );
 }
