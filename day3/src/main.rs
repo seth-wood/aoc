@@ -6,18 +6,15 @@ fn find_mul(data: &str) -> Vec<i32> {
     let do_pattern = Regex::new(r"do\(\)").unwrap();
     let dont_pattern = Regex::new(r"don't\(\)").unwrap();
     let mut mul_table = Vec::new();
-    let mut enabled: bool; // Start with mul instructions enabled
+    let mut enabled: bool;
 
     for mul_match in mul_pattern.captures_iter(data) {
-        // Determine the section of the data *before* the current mul instruction.
         let mul_start = mul_match.get(0).unwrap().start();
         let preceding_data = &data[..mul_start];
 
-        // Find the *last* "do()" and "don't()" instructions in the preceding data.
         let last_do = do_pattern.find_iter(preceding_data).last();
         let last_dont = dont_pattern.find_iter(preceding_data).last();
 
-        // Determine if the mul instruction is enabled.
         enabled = is_mul_enabled(last_do, last_dont);
 
         if enabled {
